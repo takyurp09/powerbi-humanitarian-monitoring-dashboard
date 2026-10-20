@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Humanitarian Programme Monitoring</title>
+  <meta name="description" content="Interactive programme monitoring dashboard for a child-focused response in the Cox's Bazar camps. Population and wage figures are real; programme results are synthetic.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <script>
+    (function () {
+      try { var t = localStorage.getItem('hpm-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-row">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>Humanitarian Programme Monitoring</h1>
+          <p class="sub">Child-focused multi-sector response, Cox's Bazar camps <span id="period-label"></span></p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn ghost" id="about-btn" type="button" aria-haspopup="dialog">About</button>
+        <button class="btn icon" id="theme-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Report pages">
+      <button role="tab" id="tab-overview" aria-controls="page-overview" aria-selected="true">Overview</button>
+      <button role="tab" id="tab-sectors" aria-controls="page-sectors" aria-selected="false" tabindex="-1">Sectors &amp; indicators</button>
+      <button role="tab" id="tab-camps" aria-controls="page-camps" aria-selected="false" tabindex="-1">Camps map &amp; equity</button>
+      <button role="tab" id="tab-quality" aria-controls="page-quality" aria-selected="false" tabindex="-1">Timeliness &amp; data quality</button>
+      <button role="tab" id="tab-tpm" aria-controls="page-tpm" aria-selected="false" tabindex="-1">Third-party monitoring</button>
+      <button role="tab" id="tab-host" aria-controls="page-host" aria-selected="false" tabindex="-1">Host community</button>
+    </nav>
+    <div class="banner" role="note">
+      <strong>Data note:</strong> Population and wage figures are real (sources in About); programme results are synthetic for demonstration.
+    </div>
+  </header>
+
+  <section class="filters" aria-label="Global filters">
+    <div class="filter">
+      <label for="f-start">From</label>
+      <select id="f-start"></select>
+    </div>
+    <div class="filter">
+      <label for="f-end">To</label>
+      <select id="f-end"></select>
+    </div>
+    <div class="filter">
+      <label for="f-sector">Sector</label>
+      <select id="f-sector"><option value="">All sectors</option></select>
+    </div>
+    <div class="filter">
+      <label for="f-upazila">Upazila</label>
+      <select id="f-upazila"><option value="">All upazilas</option></select>
+    </div>
+    <div class="filter presets" role="group" aria-label="Period presets">
+      <button class="chip-btn" type="button" data-preset="all">All</button>
+      <button class="chip-btn" type="button" data-preset="2025">2025</button>
+      <button class="chip-btn" type="button" data-preset="2026">2026 H1</button>
+    </div>
+    <button class="btn ghost small" id="f-reset" type="button">Reset</button>
+  </section>
+
+  <main id="main">
+    <div id="loading" class="loading" role="status">Loading data…</div>
+
+    <!-- Overview -->
+    <section class="page" id="page-overview" role="tabpanel" aria-labelledby="tab-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g-2-1">
+        <article class="card">
+          <header class="card-h"><h2>Achievement vs target</h2><span class="hint">Monthly, equal-weighted indicators; 90% on-track line</span></header>
+          <div class="chart" id="c-trend" role="img" aria-label="Line chart of monthly achievement percent against the 90 percent on-track threshold, with the January 2026 funding cut marked."></div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Sector status</h2><span class="hint">Achievement % in selected period</span></header>
+          <div class="chart" id="c-sector" role="img" aria-label="Bar chart of achievement percent by sector, coloured by status."></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Sectors -->
+    <section class="page" id="page-sectors" role="tabpanel" aria-labelledby="tab-sectors" hidden>
+      <div class="grid g-2-1">
+        <article class="card">
+          <header class="card-h"><h2>Indicator scorecard</h2><span class="hint">Click a column header to sort</span></header>
+          <div class="table-wrap">
+            <table class="tbl" id="t-ind">
+              <caption class="sr-only">Indicator achievement with status, sortable by column</caption>
+              <thead><tr>
+                <th scope="col" data-k="sector" aria-sort="none"><button type="button">Sector</button></th>
+                <th scope="col" data-k="name" aria-sort="none"><button type="button">Indicator</button></th>
+                <th scope="col" data-k="unit" aria-sort="none"><button type="button">Unit</button></th>
+                <th scope="col" data-k="tgt" class="num" aria-sort="none"><button type="button">Target</button></th>
+                <th scope="col" data-k="ach" class="num" aria-sort="none"><button type="button">Achieved</button></th>
+                <th scope="col" data-k="pct" class="num" aria-sort="descending"><button type="button">Achievement</button></th>
+                <th scope="col" data-k="delta" class="num" aria-sort="none"><button type="button">vs prior month</button></th>
+                <th scope="col" data-k="pct" aria-sort="none">Status</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Achievement by partner</h2><span class="hint">Synthetic partners</span></header>
+          <div class="chart tall" id="c-partner" role="img" aria-label="Bar chart of achievement percent by partner."></div>
+        </article>
+      </div>
+      <article class="card">
+        <header class="card-h"><h2>Sector trends</h2><span class="hint">Monthly achievement % by sector</span></header>
+        <div class="chart" id="c-sector-trend" role="img" aria-label="Line chart of monthly achievement percent for each sector."></div>
+      </article>
+    </section>
+
+    <!-- Camps -->
+    <section class="page" id="page-camps" role="tabpanel" aria-labelledby="tab-camps" hidden>
+      <div class="grid g-2-1">
+        <article class="card">
+          <header class="card-h"><h2>Camp reach map</h2><span class="hint">Circle size: real population (30 Jun 2026); colour: reach per 1,000 children</span></header>
+          <div id="map" class="map" role="region" aria-label="Map of camps. Circles sized by population and coloured by reach per 1,000 children."></div>
+          <div class="legend" id="map-legend" aria-hidden="true"></div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Reach per 1,000 children</h2><span class="hint">Average monthly, children indicators</span></header>
+          <div class="chart xtall" id="c-reach" role="img" aria-label="Ranked bar chart of children reached per month per 1,000 children by camp."></div>
+        </article>
+      </div>
+      <div class="grid g-1-1">
+        <article class="card">
+          <header class="card-h"><h2>Female share of people reached</h2><span class="hint">Dashed line: population female share 51.5%</span></header>
+          <div class="chart" id="c-female" role="img" aria-label="Scatter chart of female share reached against camp population."></div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Population by age and sex</h2><span class="hint">Real, all camps, 30 Jun 2026</span></header>
+          <div class="chart" id="c-pyramid" role="img" aria-label="Population pyramid by age group and sex."></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Quality -->
+    <section class="page" id="page-quality" role="tabpanel" aria-labelledby="tab-quality" hidden>
+      <div class="kpis small" id="kpis-q"></div>
+      <div class="grid g-2-1">
+        <article class="card">
+          <header class="card-h"><h2>Partner timeliness by month</h2><span class="hint">% of rows reported by the 10th of the following month</span></header>
+          <div class="chart tall" id="c-heat" role="img" aria-label="Heatmap of reporting timeliness percent by partner and month."></div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Data quality issues</h2><span class="hint">Flagged rows by type and month</span></header>
+          <div class="chart tall" id="c-dq" role="img" aria-label="Stacked bar chart of data quality issues by type and month."></div>
+        </article>
+      </div>
+      <article class="card">
+        <header class="card-h"><h2>Partner scorecard</h2></header>
+        <div class="table-wrap"><table class="tbl" id="t-partner">
+          <caption class="sr-only">Partner timeliness and data quality</caption>
+          <thead><tr><th scope="col">Partner</th><th scope="col">Type</th><th scope="col" class="num">Timeliness</th><th scope="col" class="num">Late rows</th><th scope="col" class="num">Avg lag (days)</th><th scope="col" class="num">DQ score</th><th scope="col" class="num">Missing</th><th scope="col" class="num">Outlier</th><th scope="col" class="num">Inconsistent</th></tr></thead>
+          <tbody></tbody></table></div>
+      </article>
+    </section>
+
+    <!-- TPM -->
+    <section class="page" id="page-tpm" role="tabpanel" aria-labelledby="tab-tpm" hidden>
+      <div class="kpis small" id="kpis-t"></div>
+      <div class="grid g-1-1">
+        <article class="card">
+          <header class="card-h"><h2>Closure by issue category</h2><span class="hint">Visits with at least one issue</span></header>
+          <div class="chart" id="c-tpm-cat" role="img" aria-label="Stacked bar chart of closed and open follow-ups by issue category."></div>
+        </article>
+        <article class="card">
+          <header class="card-h"><h2>Days to close</h2><span class="hint">Closed follow-ups</span></header>
+          <div class="chart" id="c-tpm-hist" role="img" aria-label="Histogram of days to close follow-ups."></div>
+        </article>
+      </div>
+      <article class="card">
+        <header class="card-h"><h2>Open follow-ups older than 30 days</h2><span class="hint" id="open-note"></span></header>
+        <div class="table-wrap"><table class="tbl" id="t-open">
+          <caption class="sr-only">Open follow-ups older than 30 days at the end of the selected period</caption>
+          <thead><tr><th scope="col">Visit</th><th scope="col">Date</th><th scope="col">Camp</th><th scope="col">Sector</th><th scope="col">Partner</th><th scope="col">Category</th><th scope="col" class="num">Issues</th><th scope="col" class="num">Days open</th></tr></thead>
+          <tbody></tbody></table></div>
+      </article>
+    </section>
+
+    <!-- Host -->
+    <section class="page" id="page-host" role="tabpanel" aria-labelledby="tab-host" hidden>
+      <article class="card">
+        <header class="card-h">
+          <h2>Agricultural daily wage: Cox's Bazar vs national median</h2>
+          <div class="seg" role="group" aria-label="Meals provided">
+            <label for="f-meals" class="sr-only">Meals provided</label>
+            <select id="f-meals"></select>
+          </div>
+        </header>
+        <p class="note"><strong>Descriptive context only.</strong> Nominal BDT per day, not inflation-adjusted. These series do not show any effect of the refugee presence on wages. Programme filters do not apply here. Source: BBS Agricultural Wage Statistics; derived by the author.</p>
+        <div class="chart tall" id="c-wage" role="img" aria-label="Line chart of nominal daily agricultural wages for Cox's Bazar and the national median, by sex, 2017 to 2025."></div>
+      </article>
+      <div class="kpis small" id="kpis-h"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Population and wage figures are real (sources in About); programme results are synthetic for demonstration.</p>
+    <p>Designed by Muhammad Taky Tahmid. Built with AI assistance (Claude). · <a id="repo-link" href="https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard">Source on GitHub</a></p>
+  </footer>
+
+  <dialog id="about" aria-labelledby="about-title">
+    <div class="modal">
+      <header class="modal-h">
+        <h2 id="about-title">About this dashboard</h2>
+        <button class="btn icon" type="button" id="about-close" aria-label="Close About">&times;</button>
+      </header>
+      <div class="modal-b">
+        <p>A web companion to a Power BI report for monitoring a child-focused, multi-sector humanitarian programme in the Rohingya refugee camps of Cox's Bazar, Bangladesh. It mirrors the six report pages.</p>
+        <h3>What is real and what is synthetic</h3>
+        <ul>
+          <li><strong>Real:</strong> camp names, locations, registered population and families, age/sex breakdown, host-community agricultural wages.</li>
+          <li><strong>Synthetic:</strong> programme targets and results, partners, reporting dates, data-quality flags and third-party monitoring visits (generated with a fixed seed, targets scaled to real population).</li>
+        </ul>
+        <h3>Sources and licences</h3>
+        <ul id="about-sources"></ul>
+        <h3>Definitions</h3>
+        <dl class="defs">
+          <dt>Achievement %</dt><dd>Count indicators: sum achieved / sum target. Rate indicators: mean over mean. When several indicators are in view they are averaged with equal weight.</dd>
+          <dt>Status</dt><dd>On track ≥ 90%, at risk 70–89%, off track &lt; 70%.</dd>
+          <dt>Reach per 1,000 children</dt><dd>Average monthly achieved on children-unit count indicators ÷ camp child population × 1,000. A relative index (several indicators are added), not a share of children.</dd>
+          <dt>Reporting timeliness %</dt><dd>Share of result rows submitted by the 10th of the following month.</dd>
+          <dt>Data quality score %</dt><dd>Share of result rows with no quality flag (missing, outlier, inconsistent).</dd>
+          <dt>TPM closure rate</dt><dd>Closed follow-ups ÷ visits that flagged at least one issue. Days to close averaged over closed follow-ups.</dd>
+          <dt>Female share</dt><dd>Female achieved ÷ total achieved on people/children count indicators. Population benchmark 51.5%.</dd>
+        </dl>
+        <h3>Credits</h3>
+        <p>Designed by Muhammad Taky Tahmid. Built with AI assistance (Claude). Charts: Apache ECharts. Map: Leaflet, © OpenStreetMap contributors.</p>
+        <p><a id="about-repo" href="https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard">View the repository</a> · <span id="about-gen"></span></p>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

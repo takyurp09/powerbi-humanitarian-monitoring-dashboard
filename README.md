@@ -2,6 +2,10 @@
 
 # Humanitarian Programme Monitoring Dashboard (Power BI)
 
+<p align="center"><a href="https://takyurp09.github.io/powerbi-humanitarian-monitoring-dashboard/"><strong>▶ Open the interactive web dashboard</strong></a> &nbsp;·&nbsp; <a href="docs/CASE_STUDY.md">Read the case study</a></p>
+
+> The interactive web dashboard (in `site/`, built with ECharts and Leaflet from the same model data) is a companion to the Power BI report. Population and wage figures are real; programme results are synthetic.
+
 [![Validate](https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard/actions/workflows/validate.yml)
 ![Power BI](https://img.shields.io/badge/Power%20BI-report-F2C811?logo=powerbi&logoColor=black)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
