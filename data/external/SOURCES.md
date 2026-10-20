@@ -25,3 +25,5 @@ Extracted outputs (`data/model/`):
 
 Notes: Camp 23 (Shamlapur) appears in the 2021 list but not in the 2026 table. Coordinates in the HDX
 file are site points; Camp 4 / Camp 4 Extension and Camp 20 / Camp 20 Extension share coordinates.
+
+> Note: the UNHCR PDF is not committed to this repository (no open licence). Download it from the URL above into `data/external/unhcr/` to re-run `scripts/ingest_population.py`; the derived tables in `data/model/` are committed with attribution.
