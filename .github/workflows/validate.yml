@@ -1,0 +1,23 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+      - name: Ingest (skips gracefully when external inputs are absent)
+        run: make ingest PY=python
+      - name: Generate, clean, validate and rebuild case-study outputs
+        run: make data validate case-study PY=python

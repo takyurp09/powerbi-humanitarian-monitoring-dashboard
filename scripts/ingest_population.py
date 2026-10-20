@@ -12,8 +12,11 @@ Outputs:
 """
 from __future__ import annotations
 
+import os
 import re
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -21,8 +24,9 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 EXT = ROOT / "data" / "external"
 MODEL = ROOT / "data" / "model"
-HDX = EXT / "hdx" / "20211122_location_fce_rrrc_unhcr_population-registration_public.xlsx"
-PDF = EXT / "unhcr" / "unhcr_rohingya_population_dashboard_2026-06-30.pdf"
+# Override with the HDX_SOURCE / UNHCR_PDF environment variables.
+HDX = Path(os.environ.get("HDX_SOURCE", EXT / "hdx" / "20211122_location_fce_rrrc_unhcr_population-registration_public.xlsx"))
+PDF = Path(os.environ.get("UNHCR_PDF", EXT / "unhcr" / "unhcr_rohingya_population_dashboard_2026-06-30.pdf"))
 AS_OF_2021, AS_OF_2026 = "2021-10-31", "2026-06-30"
 NATIONAL_TOTAL_2026, NATIONAL_FAMILIES_2026 = 1_200_171, 249_823
 AGE_GROUPS = ["Below 1", "1-4", "5-11", "12-17", "18-59", "60+"]
@@ -87,7 +91,12 @@ def ingest_demographics_2026() -> pd.DataFrame:
     return df
 
 
-def main() -> None:
+def main() -> int:
+    missing = [str(f) for f in (HDX, PDF) if not f.exists()]
+    if missing or shutil.which("pdftotext") is None:
+        why = f"input(s) not found: {', '.join(missing)}" if missing else "pdftotext not installed"
+        print(f"ingest_population: {why}; keeping committed reference tables in {MODEL.name}/.")
+        return 0
     MODEL.mkdir(parents=True, exist_ok=True)
     h, p, d = ingest_hdx(), ingest_camps_2026(), ingest_demographics_2026()
     h.to_csv(MODEL / "dim_camp_population_2021.csv", index=False)
@@ -97,7 +106,8 @@ def main() -> None:
     print(f"UNHCR 2026: {len(p)} camp rows, {p.individuals.sum():,} individuals, {p.families.sum():,} families")
     u18 = d[~d.age_group.isin(["18-59", "60+"])].individuals.sum()
     print(f"UNHCR 2026 demographics: under-18 share {u18 / d.individuals.sum():.3f}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

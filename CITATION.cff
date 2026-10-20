@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below."
+title: "Humanitarian Programme Monitoring Dashboard (Power BI)"
+authors:
+  - family-names: Tahmid
+    given-names: Muhammad Taky
+version: 1.0.0
+date-released: 2026-10-20
+license: MIT
+repository-code: "https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard"
+keywords:
+  - Power BI
+  - DAX
+  - monitoring and evaluation
+  - humanitarian data
+  - Cox's Bazar
