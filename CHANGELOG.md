@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org/).
 
+## [1.0.1] - 2026-10-20
+
+### Changed
+- README describes what the repository contains: the Power BI data model, Power Query scripts, DAX measures, theme and page specification, plus the web dashboard. Removed the placeholder for report screenshots and the empty `dashboard/` entry.
+- README preview now shows screenshots of the web dashboard (`assets/web_overview.png`, `assets/web_camps_map.png`).
+- Web dashboard: sector status labels and the median label on the reach chart are no longer cut off.
+
 ## [1.0.0] - 2026-10-20
 
 ### Added

@@ -183,7 +183,7 @@
     const bySec = D.dims.sectors.map((name, s) => ({ name, v: achievement(rows.filter(r => D.dims.indicators[r[2]].sector === s)) })).filter(d => d.v != null).sort((a, b) => a.v - b.v);
     setOpt('c-sector', {
       tooltip: { trigger: 'item', formatter: p => `${esc(p.name)}<br>${fmtPct(p.value)} · ${statusLabel[status(p.value)]}` },
-      grid: { left: 8, right: 70, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 112, top: 8, bottom: 8, containLabel: true },
       xAxis: pctAxis(0), yAxis: ax({ type: 'category', data: bySec.map(d => d.name), splitLine: { show: false } }),
       series: [{ type: 'bar', barWidth: '55%', data: bySec.map(d => ({ value: d.v, itemStyle: { color: COL[status(d.v)], borderRadius: [0, 4, 4, 0] } })),
         label: { show: true, position: 'right', color: css('--text'), formatter: p => `${fmtPct(p.value)}  ${statusLabel[status(p.value)]}` },
@@ -316,7 +316,7 @@
     const med = vals.length ? vals.slice().sort((a, b) => a - b)[Math.floor(vals.length / 2)] : null;
     setOpt('c-reach', {
       tooltip: { trigger: 'item', formatter: p => `${esc(p.name)}<br>${fmtInt(p.value)} per 1,000 children / month` },
-      grid: { left: 8, right: 44, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 44, top: 22, bottom: 8, containLabel: true },
       xAxis: ax({ type: 'value' }), yAxis: ax({ type: 'category', data: ranked.map(c => c.name), splitLine: { show: false }, axisLabel: { color: css('--muted'), fontSize: 10, interval: 0 } }),
       series: [{ type: 'bar', barWidth: '65%', data: ranked.map(c => ({ value: c.reach, itemStyle: { color: ramp(norm(c.reach)), borderRadius: [0, 3, 3, 0] } })),
         label: { show: true, position: 'right', fontSize: 10, color: css('--muted'), formatter: p => fmtInt(p.value) },

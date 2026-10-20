@@ -4,18 +4,16 @@
 
 <p align="center"><a href="https://takyurp09.github.io/powerbi-humanitarian-monitoring-dashboard/"><strong>▶ Open the interactive web dashboard</strong></a> &nbsp;·&nbsp; <a href="docs/CASE_STUDY.md">Read the case study</a></p>
 
-> The interactive web dashboard (in `site/`, built with ECharts and Leaflet from the same model data) is a companion to the Power BI report. Population and wage figures are real; programme results are synthetic.
+> The repository holds the Power BI layer (Power Query scripts, DAX measures, report theme and page specification) and a working web dashboard in `site/`, built with ECharts and Leaflet on the same model data. Population and wage figures are real; programme results are synthetic.
 
 [![Validate](https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/takyurp09/powerbi-humanitarian-monitoring-dashboard/actions/workflows/validate.yml)
-![Power BI](https://img.shields.io/badge/Power%20BI-report-F2C811?logo=powerbi&logoColor=black)
+![Power BI](https://img.shields.io/badge/Power%20BI-data%20model-F2C811?logo=powerbi&logoColor=black)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![DAX](https://img.shields.io/badge/DAX-measure%20library-5C2D91)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-green.svg)](LICENSE)
 ![Data](https://img.shields.io/badge/data-synthetic%20%2B%20public-lightgrey)
 
-A portfolio project that builds an end-to-end monitoring solution for a multi-sector, child-focused programme in a humanitarian response context. Messy partner reports and third-party monitoring (TPM) visit logs are cleaned with Python into a star schema, which feeds a Power BI report covering target achievement by sector, indicator and camp, reporting timeliness, data quality, equity by sex, and the follow-up of issues raised by third-party monitors. The repository contains the data pipeline, Power Query scripts, a documented DAX measure library, a report theme and a full page specification.
-
-**Case study:** [docs/CASE_STUDY.md](docs/CASE_STUDY.md) is an analytical brief that uses the dashboard to answer six monitoring questions after a 2026 funding cut (sector performance, camp coverage, reporting and data quality, TPM follow-up, sex gaps, host-community wages), with recommendations.
+A portfolio project that builds an end-to-end monitoring solution for a multi-sector, child-focused programme in a humanitarian response context. Python scripts clean messy partner reports and third-party monitoring (TPM) visit logs into a star schema. On top of that model, Power Query scripts and a documented DAX measure library define target achievement by sector, indicator and camp, reporting timeliness, data quality, equity by sex, and the follow-up of issues raised by third-party monitors. The repository also has a report theme, a page-by-page report specification and a web dashboard that runs on the same data.
 
 **Case study:** [docs/CASE_STUDY.md](docs/CASE_STUDY.md) is an analytical brief that uses the dashboard to answer six monitoring questions after a 2026 funding cut (sector performance, camp coverage, reporting and data quality, TPM follow-up, sex gaps, host-community wages), with recommendations.
 
@@ -40,9 +38,15 @@ A portfolio project that builds an end-to-end monitoring solution for a multi-se
 
 ## Preview
 
-<p align="center"><img src="assets/dashboard_mockup.png" alt="Executive overview design mock-up" width="100%"></p>
+Screenshots from the [web dashboard](https://takyurp09.github.io/powerbi-humanitarian-monitoring-dashboard/).
 
-*Design mock-up generated with Python from the model data; the Power BI report is assembled from docs/BUILD_GUIDE.md.*
+<p align="center"><img src="assets/web_overview.png" alt="Overview page of the web dashboard" width="100%"></p>
+
+*Overview page: achievement against target, reporting timeliness, data quality and TPM closure, with the January 2026 funding cut marked on the trend.*
+
+<p align="center"><img src="assets/web_camps_map.png" alt="Camp map and reach per 1,000 children" width="100%"></p>
+
+*Camp map: circles are sized by the real camp population and coloured by reach per 1,000 children.*
 
 Case-study charts (from [docs/CASE_STUDY.md](docs/CASE_STUDY.md)):
 
@@ -52,22 +56,17 @@ Case-study charts (from [docs/CASE_STUDY.md](docs/CASE_STUDY.md)):
 | ![TPM follow-up](assets/case_study_tpm.png) | ![Host-community wages](assets/case_study_host_wages.png) |
 
 <details>
-<summary>Planned report pages and screenshot files</summary>
+<summary>Power BI report pages</summary>
 
-Screenshots will be added after building the report.
+[docs/DASHBOARD_SPEC.md](docs/DASHBOARD_SPEC.md) sets out the visuals, filters and measures for each page, and [assets/wireframe.svg](assets/wireframe.svg) shows the overview layout. The web dashboard follows the first six pages.
 
-
-| Page | File |
-|---|---|
-| Executive overview | `assets/overview.png` |
-| Sector and indicator performance | `assets/sector.png` |
-| Camp map and equity | `assets/camp_map.png` |
-| Reporting timeliness and data quality | `assets/timeliness_dq.png` |
-| Third-party monitoring follow-up | `assets/tpm.png` |
-| Host community context | `assets/host_context.png` |
-| Camp detail (drill-through) | `assets/camp_detail.png` |
-
-The planned overview layout is shown in [assets/wireframe.svg](assets/wireframe.svg).
+1. Executive overview
+2. Sector and indicator performance
+3. Camp map and equity
+4. Reporting timeliness and data quality
+5. Third-party monitoring follow-up
+6. Host community context
+7. Camp detail (drill-through)
 
 </details>
 
@@ -110,8 +109,7 @@ flowchart LR
 
 ```
 .
-├── assets/            Wireframe and report screenshots
-├── dashboard/         HumanitarianMonitoring.pbix (to be added)
+├── assets/            Banner, wireframe, case-study charts and web dashboard screenshots
 ├── data/
 │   ├── external/      Public source files (HDX, UNHCR) + SOURCES.md
 │   ├── raw/           Messy synthetic inputs
@@ -123,8 +121,9 @@ flowchart LR
 │   ├── DASHBOARD_SPEC.md    Page-by-page report specification
 │   ├── CASE_STUDY.md        Analytical brief built on the dashboard
 │   ├── case_study_tables/   Figures cited in the case study
-│   └── BUILD_GUIDE.md       Steps to assemble the .pbix
+│   └── BUILD_GUIDE.md       Steps to build the report in Power BI Desktop
 ├── powerquery/        Power Query (M) script per table
+├── site/              Web dashboard (ECharts, Leaflet), deployed to GitHub Pages
 ├── scripts/           Population and wage ingest, data generation, cleaning, validation, case-study metrics (Python)
 ├── theme/report_theme.json  Power BI report theme
 ├── Makefile
@@ -174,22 +173,22 @@ The model combines real public camp population data with synthetic programme dat
 | Camp list, upazila, union, coordinates (`dim_camp`, `dim_camp_population_2021`) | Real | HDX / ISCG, RRRC-UNHCR family counting ([dataset](https://data.humdata.org/dataset/site-location-of-rohingya-refugees-in-cox-s-bazar)) | CC0 | 31 Oct 2021 |
 | Camp population and families (`dim_camp[population]`, `ref_population_2026`) | Real | Government of Bangladesh - UNHCR Joint Registration, population dashboard ([PDF](https://data.unhcr.org/en/documents/download/123174)) | Public UNHCR document, reused with attribution | 30 Jun 2026 |
 | Age/sex demographics, children share (`ref_demographics_2026`, `dim_camp[children_share]`) | Real (national share applied to each camp) | Same UNHCR dashboard | As above | 30 Jun 2026 |
-| Host-community agricultural wages, Cox's Bazar and national median (`ref_wages_coxsbazar`) | Real | BBS Agricultural Wage Statistics, public download ([bbs.gov.bd](http://www.bbs.gov.bd/)); derived by the author from his research pipeline (`scripts/ingest_wages.py`) | Public government statistics, reused with attribution | 2017-01 to 2025-12 |
+| Host-community agricultural wages, Cox's Bazar and national median (`ref_wages_coxsbazar`) | Real | BBS Agricultural Wage Statistics, public download ([bbs.gov.bd](http://www.bbs.gov.bd/)); derived from the author's research pipeline (`scripts/ingest_wages.py`) | Public government statistics, reused with attribution | 2017-01 to 2025-12 |
 | Programme targets and results (`fact_results`) | Synthetic; count targets scaled to real camp (children) population | `scripts/generate_data.py`, seed 2026 | MIT (this repo) | 2025-01 to 2026-06 |
 | Partners, indicators, TPM visits (`dim_partner`, `dim_indicator`, `fact_tpm_visits`) | Synthetic | `scripts/generate_data.py` | MIT (this repo) | 2025-01 to 2026-06 |
 
-Source: Government of Bangladesh – UNHCR Joint Registration, 30 Jun 2026; BBS Agricultural Wage Statistics (derived by the author). Full provenance is in [data/external/SOURCES.md](data/external/SOURCES.md). The synthetic programme data do not represent any organisation's real results.
+Source: Government of Bangladesh-UNHCR Joint Registration, 30 Jun 2026; BBS Agricultural Wage Statistics (derived by the author). Full provenance is in [data/external/SOURCES.md](data/external/SOURCES.md). The synthetic programme data do not represent any organisation's real results.
 
 ## Roadmap
 - [x] Data pipeline, Power Query scripts, DAX measure library, theme and documentation
 - [x] Case study with figures and recommendations
 - [x] Continuous integration for the data pipeline
-- [ ] Power BI report (.pbix) and screenshots
+- [x] Web dashboard on GitHub Pages
 
 See [CHANGELOG.md](CHANGELOG.md) for released changes and [CONTRIBUTING.md](CONTRIBUTING.md) for how to report issues.
 
 ## Authorship and AI assistance
-Designed and maintained by Muhammad Taky Tahmid. The data pipeline, DAX measure library and documentation were developed with AI assistance (Claude); the Power BI report is built and maintained by the author.
+Designed and maintained by Muhammad Taky Tahmid. The data pipeline, DAX measure library, web dashboard and documentation were developed with AI assistance (Claude).
 
 - GitHub: [takyurp09](https://github.com/takyurp09)
 
