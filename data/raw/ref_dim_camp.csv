@@ -1,0 +1,25 @@
+camp_id,camp_name,upazila,union,latitude,longitude,population,families,children_share,population_source,population_as_of
+C01,Camp 1E,Ukhia,Palong Khali,21.21603,92.1562,53703,11459,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C02,Camp 1W,Ukhia,Palong Khali,21.21321,92.15333,46466,9525,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C03,Camp 2E,Ukhia,Palong Khali,21.20661,92.16429,34302,7375,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C04,Camp 2W,Ukhia,Palong Khali,21.20918,92.15829,31067,6571,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C05,Camp 3,Ukhia,Palong Khali,21.20888,92.14952,43289,8907,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C06,Camp 4,Ukhia,Palong Khali,21.20842,92.14436,46180,10016,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C07,Camp 5,Ukhia,Palong Khali,21.20335,92.15174,34043,7118,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C08,Camp 6,Ukhia,Palong Khali,21.20421,92.15685,30061,5890,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C09,Camp 7,Ukhia,Palong Khali,21.20309,92.16412,48580,9873,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C10,Camp 8E,Ukhia,Palong Khali,21.19664,92.16339,37960,7743,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C11,Camp 8W,Ukhia,Palong Khali,21.19686,92.15662,38928,7978,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C12,Camp 9,Ukhia,Palong Khali,21.19082,92.15899,46170,9538,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C13,Camp 10,Ukhia,Palong Khali,21.18968,92.15487,37606,7656,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C14,Camp 11,Ukhia,Palong Khali,21.18344,92.15538,38014,7474,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C15,Camp 12,Ukhia,Palong Khali,21.18145,92.15133,38045,7829,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C16,Camp 13,Ukhia,Palong Khali,21.17868,92.13963,53549,10804,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C17,Camp 14,Ukhia,Palong Khali,21.16658,92.14528,39625,7853,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C18,Camp 15,Ukhia,Palong Khali,21.16022,92.1438,67535,13510,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C19,Camp 17,Ukhia,Palong Khali,21.19714,92.14256,29595,6419,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C20,Camp 18,Ukhia,Palong Khali,21.1883,92.14812,43872,9447,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C21,Camp 19,Ukhia,Palong Khali,21.18252,92.14385,32672,6698,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C22,Camp 24,Teknaf,Nhilla,20.97416,92.24403,37159,7842,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C23,Camp 26,Teknaf,Nhilla,20.95831,92.25073,56266,11734,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30
+C24,Camp 27,Teknaf,Nhilla,20.93871,92.25988,30037,6414,0.52,GoB-UNHCR Joint Registration (dashboard),2026-06-30

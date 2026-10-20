@@ -1,0 +1,16 @@
+indicator_id,sector_id,indicator_name,unit,aggregation,higher_is_better
+I01,S1,Children enrolled in learning centres,children,sum,True
+I02,S1,Learning facilities meeting standards,facilities,sum,True
+I03,S1,Learning centre attendance rate,%,avg,True
+I04,S2,Children receiving case management,children,sum,True
+I05,S2,Children reached with psychosocial support,children,sum,True
+I06,S2,Child protection cases closed,%,avg,True
+I07,S3,People with access to safe water,people,sum,True
+I08,S3,Latrines rehabilitated,facilities,sum,True
+I09,S3,Hygiene kits distributed on time,%,avg,True
+I10,S4,Outpatient consultations,people,sum,True
+I11,S4,Children vaccinated against measles,children,sum,True
+I12,S4,Health facilities with no stock-out,%,avg,True
+I13,S5,Children screened for malnutrition,children,sum,True
+I14,S5,SAM admissions treated,children,sum,True
+I15,S5,SAM cure rate,%,avg,True

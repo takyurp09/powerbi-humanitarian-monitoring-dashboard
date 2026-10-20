@@ -1,0 +1,13 @@
+rule,rows_affected
+results: exact duplicate rows removed,184
+results: camp names standardised,5598
+results: non-ISO report dates parsed,9265
+results: sex codes expanded (F/M),910
+results: late reports flagged,1135
+results: key duplicates removed (kept latest),0
+results: missing achieved flagged,275
+results: inconsistent values flagged (negative / >100%) and blanked,280
+results: outliers flagged (achieved > 2.5x target),179
+tpm: duplicate visits removed,12
+tpm: camp names standardised,280
+tpm: issue_category case fixed,21

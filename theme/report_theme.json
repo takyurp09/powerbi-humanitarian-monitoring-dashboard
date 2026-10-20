@@ -1,0 +1,45 @@
+{
+  "name": "Humanitarian Monitoring Neutral",
+  "dataColors": ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#56B4E9", "#CC79A7", "#F0E442", "#4D4D4D"],
+  "foreground": "#252423",
+  "foregroundNeutralSecondary": "#605E5C",
+  "foregroundNeutralTertiary": "#B3B0AD",
+  "background": "#FFFFFF",
+  "backgroundLight": "#F5F6F7",
+  "backgroundNeutral": "#E1E4E8",
+  "tableAccent": "#0072B2",
+  "good": "#0072B2",
+  "neutral": "#E69F00",
+  "bad": "#D55E00",
+  "maximum": "#0072B2",
+  "center": "#F7F7F7",
+  "minimum": "#D55E00",
+  "null": "#9E9E9E",
+  "textClasses": {
+    "callout": { "fontSize": 28, "fontFace": "Segoe UI Semibold", "color": "#252423" },
+    "title": { "fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#252423" },
+    "header": { "fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#252423" },
+    "label": { "fontSize": 10, "fontFace": "Segoe UI", "color": "#605E5C" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#E1E4E8" } }, "radius": 4 }],
+        "title": [{ "show": true, "fontColor": { "solid": { "color": "#252423" } }, "fontSize": 12 }],
+        "visualHeader": [{ "show": true }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F5F6F7" } }, "transparency": 0 }]
+      }
+    },
+    "card": {
+      "*": {
+        "labels": [{ "fontSize": 26, "color": { "solid": { "color": "#252423" } } }],
+        "categoryLabels": [{ "show": true, "fontSize": 10, "color": { "solid": { "color": "#605E5C" } } }]
+      }
+    }
+  }
+}

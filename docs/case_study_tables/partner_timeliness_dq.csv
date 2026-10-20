@@ -1,0 +1,11 @@
+partner_name,partner_type,rows,late,timeliness_pct,lag,dq_issues,dq_score_pct
+Partner J,Government,1152,82,92.9,35.7,53,95.4
+Partner G,National NGO,2448,171,93.0,35.5,84,96.6
+Partner E,Government,1188,80,93.3,35.4,52,95.6
+Partner H,National NGO,936,63,93.3,35.5,51,94.6
+Partner A,International NGO,2484,163,93.4,35.4,100,96.0
+Partner B,International NGO,1692,102,94.0,35.3,74,95.6
+Partner C,National NGO,2628,151,94.3,35.4,107,95.9
+Partner D,National NGO,2376,133,94.4,35.3,78,96.7
+Partner I,International NGO,2376,133,94.4,35.3,92,96.1
+Partner F,International NGO,1080,57,94.7,35.2,43,96.0

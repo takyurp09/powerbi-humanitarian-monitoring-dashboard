@@ -1,0 +1,512 @@
+// =====================================================================
+// Humanitarian Programme Monitoring Dashboard - DAX measure library
+// ---------------------------------------------------------------------
+// Model contract: docs/SCHEMA.md
+// Host table    : create an empty table "_Measures" (Enter data, one
+//                 dummy column, then hide the column) and attach all
+//                 measures below to it.
+// Format        : Tabular Editor style. Each measure is declared as
+//                 MEASURE '_Measures'[Name] = <expression>
+//                 with display folder and format string annotations.
+//                 The block can be pasted into a DAX query view
+//                 "DEFINE" section or applied via Tabular Editor.
+// Relationships : all single-direction, one-to-many from dimensions to
+//                 facts (see docs/BUILD_GUIDE.md). No inactive
+//                 relationships are required, so USERELATIONSHIP is not
+//                 used.
+// =====================================================================
+
+DEFINE
+
+// ---------------------------------------------------------------------
+// Display folder: Targets & Results
+// ---------------------------------------------------------------------
+
+    // Sum of planned targets across the current filter context.
+    // Only meaningful for indicators with aggregation = "sum"; for "avg"
+    // indicators see [Achievement %].
+    MEASURE '_Measures'[Total Target] =
+        SUM ( fact_results[target] )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+    MEASURE '_Measures'[Total Achieved] =
+        SUM ( fact_results[achieved] )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+    // Target and achieved restricted to sum-type (count) indicators,
+    // safe to add up across indicators and camps.
+    MEASURE '_Measures'[Target (count indicators)] =
+        CALCULATE ( [Total Target], dim_indicator[aggregation] = "sum" )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+    MEASURE '_Measures'[Achieved (count indicators)] =
+        CALCULATE ( [Total Achieved], dim_indicator[aggregation] = "sum" )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+    // Achievement % per business definition:
+    //   sum-indicators : SUM(achieved) / SUM(target)
+    //   avg-indicators : AVERAGE(achieved) / AVERAGE(target)
+    // Where higher_is_better = FALSE the ratio is inverted
+    // (target / achieved) so that 100% always means "on target".
+    // When several indicators are in context the indicator-level
+    // ratios are averaged with equal weight, avoiding the meaningless
+    // addition of people, facilities and percentages.
+    MEASURE '_Measures'[Achievement %] =
+        AVERAGEX (
+            VALUES ( dim_indicator[indicator_id] ),
+            VAR _agg =
+                CALCULATE ( SELECTEDVALUE ( dim_indicator[aggregation] ) )
+            VAR _hib =
+                CALCULATE ( SELECTEDVALUE ( dim_indicator[higher_is_better] ) )
+            VAR _tgt =
+                IF (
+                    _agg = "avg",
+                    CALCULATE ( AVERAGE ( fact_results[target] ) ),
+                    CALCULATE ( SUM ( fact_results[target] ) )
+                )
+            VAR _ach =
+                IF (
+                    _agg = "avg",
+                    CALCULATE ( AVERAGE ( fact_results[achieved] ) ),
+                    CALCULATE ( SUM ( fact_results[achieved] ) )
+                )
+            RETURN
+                IF ( _hib = FALSE (), DIVIDE ( _tgt, _ach ), DIVIDE ( _ach, _tgt ) )
+        )
+        // displayFolder = "Targets & Results"; formatString = "0.0%"
+
+    // Shortfall (positive) or surplus (negative) against target for
+    // count indicators.
+    MEASURE '_Measures'[Gap to Target] =
+        [Target (count indicators)] - [Achieved (count indicators)]
+        // displayFolder = "Targets & Results"; formatString = "#,0;-#,0;0"
+
+    MEASURE '_Measures'[Gap to Target %] =
+        1 - [Achievement %]
+        // displayFolder = "Targets & Results"; formatString = "0.0%"
+
+    // Equity: share of achieved beneficiaries who are female
+    // (count indicators only).
+    MEASURE '_Measures'[Female share %] =
+        DIVIDE (
+            CALCULATE ( [Achieved (count indicators)], fact_results[sex] = "Female" ),
+            [Achieved (count indicators)]
+        )
+        // displayFolder = "Targets & Results"; formatString = "0.0%"
+
+    MEASURE '_Measures'[Children reached] =
+        CALCULATE ( [Total Achieved], dim_indicator[unit] = "children" )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+    MEASURE '_Measures'[Camps reporting] =
+        DISTINCTCOUNT ( fact_results[camp_id] )
+        // displayFolder = "Targets & Results"; formatString = "#,0"
+
+// ---------------------------------------------------------------------
+// Display folder: Status
+// ---------------------------------------------------------------------
+
+    // Thresholds: >= 90% Green (on track), 70-89% Amber, < 70% Red.
+    MEASURE '_Measures'[Status Label] =
+        VAR _pct = [Achievement %]
+        RETURN
+            SWITCH (
+                TRUE (),
+                ISBLANK ( _pct ), "No data",
+                _pct >= 0.90, "On track",
+                _pct >= 0.70, "At risk",
+                "Off track"
+            )
+        // displayFolder = "Status"
+
+    // Hex colour for field-value conditional formatting. Colour-blind
+    // safe (Okabe-Ito derived): blue = on track, orange = at risk,
+    // vermilion = off track, grey = no data.
+    MEASURE '_Measures'[Status Colour] =
+        VAR _pct = [Achievement %]
+        RETURN
+            SWITCH (
+                TRUE (),
+                ISBLANK ( _pct ), "#9E9E9E",
+                _pct >= 0.90, "#0072B2",
+                _pct >= 0.70, "#E69F00",
+                "#D55E00"
+            )
+        // displayFolder = "Status"
+
+    // Numeric rank useful for sorting tables by severity.
+    MEASURE '_Measures'[Status Rank] =
+        VAR _pct = [Achievement %]
+        RETURN
+            SWITCH ( TRUE (), ISBLANK ( _pct ), BLANK (), _pct >= 0.90, 3, _pct >= 0.70, 2, 1 )
+        // displayFolder = "Status"; formatString = "0"
+
+    MEASURE '_Measures'[Indicators off track] =
+        COUNTROWS (
+            FILTER ( VALUES ( dim_indicator[indicator_id] ), [Achievement %] < 0.70 )
+        )
+        // displayFolder = "Status"; formatString = "#,0"
+
+    MEASURE '_Measures'[Camps off track] =
+        COUNTROWS (
+            FILTER ( VALUES ( dim_camp[camp_id] ), [Achievement %] < 0.70 )
+        )
+        // displayFolder = "Status"; formatString = "#,0"
+
+// ---------------------------------------------------------------------
+// Display folder: Timeliness
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[Report Rows] =
+        COUNTROWS ( fact_results )
+        // displayFolder = "Timeliness"; formatString = "#,0"
+
+    // A report is late when submitted after the 10th of the following month.
+    MEASURE '_Measures'[Late Reports] =
+        CALCULATE ( COUNTROWS ( fact_results ), fact_results[is_late] = TRUE () )
+        // displayFolder = "Timeliness"; formatString = "#,0"
+
+    MEASURE '_Measures'[Reporting Timeliness %] =
+        DIVIDE (
+            CALCULATE ( COUNTROWS ( fact_results ), fact_results[is_late] = FALSE () ),
+            [Report Rows]
+        )
+        // displayFolder = "Timeliness"; formatString = "0.0%"
+
+    // Average delay (days) between period start and submission.
+    MEASURE '_Measures'[Avg Reporting Lag (days)] =
+        AVERAGEX ( fact_results, fact_results[reported_date] - fact_results[date] )
+        // displayFolder = "Timeliness"; formatString = "0.0"
+
+// ---------------------------------------------------------------------
+// Display folder: Data Quality
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[DQ Score %] =
+        DIVIDE (
+            CALCULATE ( COUNTROWS ( fact_results ), fact_results[dq_flag] = "OK" ),
+            [Report Rows]
+        )
+        // displayFolder = "Data Quality"; formatString = "0.0%"
+
+    // All rows with any non-OK flag. Place fact_results[dq_flag] on an
+    // axis to obtain "DQ issues by type".
+    MEASURE '_Measures'[DQ Issues] =
+        CALCULATE ( COUNTROWS ( fact_results ), fact_results[dq_flag] <> "OK" )
+        // displayFolder = "Data Quality"; formatString = "#,0"
+
+    MEASURE '_Measures'[DQ Issues - Missing] =
+        CALCULATE ( COUNTROWS ( fact_results ), fact_results[dq_flag] = "Missing" )
+        // displayFolder = "Data Quality"; formatString = "#,0"
+
+    MEASURE '_Measures'[DQ Issues - Outlier] =
+        CALCULATE ( COUNTROWS ( fact_results ), fact_results[dq_flag] = "Outlier" )
+        // displayFolder = "Data Quality"; formatString = "#,0"
+
+    MEASURE '_Measures'[DQ Issues - Inconsistent] =
+        CALCULATE ( COUNTROWS ( fact_results ), fact_results[dq_flag] = "Inconsistent" )
+        // displayFolder = "Data Quality"; formatString = "#,0"
+
+    MEASURE '_Measures'[DQ Issue Share %] =
+        DIVIDE ( [DQ Issues], [Report Rows] )
+        // displayFolder = "Data Quality"; formatString = "0.0%"
+
+// ---------------------------------------------------------------------
+// Display folder: TPM (third-party monitoring)
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[TPM Visits] =
+        COUNTROWS ( fact_tpm_visits )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    // Rating scale 1 = Poor .. 4 = Good.
+    MEASURE '_Measures'[Avg Rating] =
+        AVERAGE ( fact_tpm_visits[rating] )
+        // displayFolder = "TPM"; formatString = "0.00"
+
+    MEASURE '_Measures'[Issues Flagged] =
+        SUM ( fact_tpm_visits[issues_flagged] )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    MEASURE '_Measures'[Visits with Issues] =
+        CALCULATE ( COUNTROWS ( fact_tpm_visits ), fact_tpm_visits[issues_flagged] > 0 )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    MEASURE '_Measures'[Follow-ups Closed] =
+        CALCULATE (
+            COUNTROWS ( fact_tpm_visits ),
+            fact_tpm_visits[issues_flagged] > 0,
+            fact_tpm_visits[followup_status] = "Closed"
+        )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    MEASURE '_Measures'[Follow-ups Open] =
+        CALCULATE (
+            COUNTROWS ( fact_tpm_visits ),
+            fact_tpm_visits[issues_flagged] > 0,
+            fact_tpm_visits[followup_status] = "Open"
+        )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    // Closure rate = Closed / visits with issues_flagged > 0.
+    MEASURE '_Measures'[Closure Rate] =
+        DIVIDE ( [Follow-ups Closed], [Visits with Issues] )
+        // displayFolder = "TPM"; formatString = "0.0%"
+
+    // Mean days_to_close over closed follow-ups of visits that flagged at
+    // least one issue. Visits with no issues are recorded as Closed with
+    // days_to_close = 0 and are excluded so they do not dilute the mean.
+    MEASURE '_Measures'[Avg Days to Close] =
+        CALCULATE (
+            AVERAGE ( fact_tpm_visits[days_to_close] ),
+            fact_tpm_visits[followup_status] = "Closed",
+            fact_tpm_visits[issues_flagged] > 0
+        )
+        // displayFolder = "TPM"; formatString = "0.0"
+
+    // Open follow-ups whose visit is more than 30 days old, measured
+    // against the latest visit date in the data (a stable "as of" date
+    // for synthetic data; replace with TODAY() in live use).
+    MEASURE '_Measures'[Open Follow-ups > 30 days] =
+        VAR _asOf =
+            CALCULATE ( MAX ( fact_tpm_visits[visit_date] ), REMOVEFILTERS () )
+        RETURN
+            CALCULATE (
+                COUNTROWS ( fact_tpm_visits ),
+                fact_tpm_visits[followup_status] = "Open",
+                fact_tpm_visits[issues_flagged] > 0,
+                FILTER (
+                    VALUES ( fact_tpm_visits[visit_date] ),
+                    _asOf - fact_tpm_visits[visit_date] > 30
+                )
+            )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+    MEASURE '_Measures'[Safeguarding Issues] =
+        CALCULATE ( [Issues Flagged], fact_tpm_visits[issue_category] = "Safeguarding" )
+        // displayFolder = "TPM"; formatString = "#,0"
+
+// ---------------------------------------------------------------------
+// Display folder: Population (real)
+// dim_camp[population] is REAL: GoB-UNHCR Joint Registration, 30 Jun 2026
+// (HDX/RRRC-UNHCR 2021 figure where a camp is missing from the 2026
+// table; see dim_camp[population_source]). dim_camp[children_population]
+// is derived in Power Query from the national under-18 share (52.0%).
+// Programme results remain synthetic.
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[Camp Population (real)] =
+        SUM ( dim_camp[population] )
+        // displayFolder = "Population (real)"; formatString = "#,0"
+
+    MEASURE '_Measures'[Children Population] =
+        SUM ( dim_camp[children_population] )
+        // displayFolder = "Population (real)"; formatString = "#,0"
+
+    // Average monthly children reached (children-unit indicators) per
+    // 1,000 children living in the camps in context. Monthly average so
+    // the ratio does not grow with the length of the selected period.
+    MEASURE '_Measures'[Reach per 1,000 children] =
+        VAR _months =
+            CALCULATE ( DISTINCTCOUNT ( fact_results[date] ), dim_indicator[unit] = "children" )
+        VAR _monthlyReach =
+            DIVIDE ( [Children reached], _months )
+        RETURN
+            DIVIDE ( _monthlyReach, [Children Population] ) * 1000
+        // displayFolder = "Population (real)"; formatString = "#,0.0"
+
+    // Coverage of the child population for children-unit count
+    // indicators: average monthly achieved / children population. Use
+    // with a single indicator selected (e.g. "Children screened for
+    // malnutrition"); across several indicators it double counts children.
+    MEASURE '_Measures'[Coverage %] =
+        VAR _ach =
+            CALCULATE ( [Total Achieved], dim_indicator[unit] = "children", dim_indicator[aggregation] = "sum" )
+        VAR _months =
+            CALCULATE ( DISTINCTCOUNT ( fact_results[date] ), dim_indicator[unit] = "children" )
+        RETURN
+            DIVIDE ( DIVIDE ( _ach, _months ), [Children Population] )
+        // displayFolder = "Population (real)"; formatString = "0.0%"
+
+// ---------------------------------------------------------------------
+// Display folder: Host Community (real)
+// ref_wages_coxsbazar is REAL: BBS Agricultural Wage Statistics (public),
+// derived by the author. Nominal daily agricultural wage, BDT, 2017-2025.
+// The table is disconnected (it starts before dim_date), so these
+// measures filter on its own columns. Put ref_wages_coxsbazar[date] on
+// the axis and slice ref_wages_coxsbazar[sex] and [meals]; pick one
+// meals value for a like-for-like series. Descriptive context only.
+// ---------------------------------------------------------------------
+
+    // Median daily wage in Cox's Bazar for the rows in context.
+    MEASURE '_Measures'[Host Wage (median daily, BDT)] =
+        CALCULATE (
+            MEDIAN ( ref_wages_coxsbazar[daily_wage_bdt] ),
+            ref_wages_coxsbazar[district] = "Cox's Bazar"
+        )
+        // displayFolder = "Host Community (real)"; formatString = "#,0"
+
+    MEASURE '_Measures'[National Wage (median daily, BDT)] =
+        CALCULATE (
+            MEDIAN ( ref_wages_coxsbazar[daily_wage_bdt] ),
+            ref_wages_coxsbazar[district] = "Bangladesh (national median)"
+        )
+        // displayFolder = "Host Community (real)"; formatString = "#,0"
+
+    // Year-on-year change: the latest month in context against the same
+    // month twelve months earlier (same sex and meals filters).
+    MEASURE '_Measures'[Wage YoY %] =
+        VAR _last = MAX ( ref_wages_coxsbazar[date] )
+        VAR _now =
+            CALCULATE ( [Host Wage (median daily, BDT)], ref_wages_coxsbazar[date] = _last )
+        VAR _prev =
+            CALCULATE (
+                [Host Wage (median daily, BDT)],
+                REMOVEFILTERS ( ref_wages_coxsbazar[date] ),
+                ref_wages_coxsbazar[date] = EDATE ( _last, -12 )
+            )
+        RETURN
+            IF ( NOT ISBLANK ( _prev ), DIVIDE ( _now, _prev ) - 1 )
+        // displayFolder = "Host Community (real)"; formatString = "+0.0%;-0.0%;0.0%"
+
+    // Cox's Bazar premium (or discount) over the national median.
+    MEASURE '_Measures'[Host vs national wage gap %] =
+        DIVIDE ( [Host Wage (median daily, BDT)], [National Wage (median daily, BDT)] ) - 1
+        // displayFolder = "Host Community (real)"; formatString = "+0.0%;-0.0%;0.0%"
+
+    MEASURE '_Measures'[Wage Source Note] =
+        "Source: BBS Agricultural Wage Statistics (nominal BDT); derived by the author. "
+            & "Camp population: Government of Bangladesh - UNHCR Joint Registration, 30 Jun 2026. "
+            & "Descriptive context only; no causal link is implied."
+        // displayFolder = "Host Community (real)"
+
+// ---------------------------------------------------------------------
+// Display folder: Time Intelligence
+// dim_date is marked as the date table on dim_date[date]; one row per
+// month (first day), so month-level offsets are exact.
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[Achieved Previous Month] =
+        CALCULATE ( [Achieved (count indicators)], DATEADD ( dim_date[date], -1, MONTH ) )
+        // displayFolder = "Time Intelligence"; formatString = "#,0"
+
+    MEASURE '_Measures'[Achieved MoM Change] =
+        VAR _cur = [Achieved (count indicators)]
+        VAR _prev = [Achieved Previous Month]
+        RETURN
+            IF ( NOT ISBLANK ( _prev ), _cur - _prev )
+        // displayFolder = "Time Intelligence"; formatString = "+#,0;-#,0;0"
+
+    MEASURE '_Measures'[Achieved MoM %] =
+        DIVIDE ( [Achieved MoM Change], [Achieved Previous Month] )
+        // displayFolder = "Time Intelligence"; formatString = "+0.0%;-0.0%;0.0%"
+
+    MEASURE '_Measures'[Achievement % MoM Change] =
+        VAR _prev =
+            CALCULATE ( [Achievement %], DATEADD ( dim_date[date], -1, MONTH ) )
+        RETURN
+            IF ( NOT ISBLANK ( _prev ), [Achievement %] - _prev )
+        // displayFolder = "Time Intelligence"; formatString = "+0.0%;-0.0%;0.0%"
+
+    MEASURE '_Measures'[YTD Achieved] =
+        CALCULATE ( [Achieved (count indicators)], DATESYTD ( dim_date[date] ) )
+        // displayFolder = "Time Intelligence"; formatString = "#,0"
+
+    MEASURE '_Measures'[YTD Target] =
+        CALCULATE ( [Target (count indicators)], DATESYTD ( dim_date[date] ) )
+        // displayFolder = "Time Intelligence"; formatString = "#,0"
+
+    MEASURE '_Measures'[Achieved Same Period Last Year] =
+        CALCULATE ( [Achieved (count indicators)], SAMEPERIODLASTYEAR ( dim_date[date] ) )
+        // displayFolder = "Time Intelligence"; formatString = "#,0"
+
+    MEASURE '_Measures'[Achieved YoY %] =
+        DIVIDE (
+            [Achieved (count indicators)] - [Achieved Same Period Last Year],
+            [Achieved Same Period Last Year]
+        )
+        // displayFolder = "Time Intelligence"; formatString = "+0.0%;-0.0%;0.0%"
+
+    // Rolling three months ending at the last month in context.
+    MEASURE '_Measures'[Rolling 3M Achievement %] =
+        VAR _end = MAX ( dim_date[date] )
+        RETURN
+            CALCULATE (
+                [Achievement %],
+                DATESINPERIOD ( dim_date[date], _end, -3, MONTH )
+            )
+        // displayFolder = "Time Intelligence"; formatString = "0.0%"
+
+    MEASURE '_Measures'[Latest Month in Data] =
+        CALCULATE ( MAX ( fact_results[date] ), REMOVEFILTERS () )
+        // displayFolder = "Time Intelligence"; formatString = "mmm yyyy"
+
+// ---------------------------------------------------------------------
+// Display folder: Formatting (dynamic titles and labels)
+// ---------------------------------------------------------------------
+
+    MEASURE '_Measures'[Selected Period Label] =
+        VAR _min = MIN ( dim_date[date] )
+        VAR _max = MAX ( dim_date[date] )
+        RETURN
+            IF (
+                _min = _max,
+                FORMAT ( _min, "mmm yyyy" ),
+                FORMAT ( _min, "mmm yyyy" ) & " - " & FORMAT ( _max, "mmm yyyy" )
+            )
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Selected Sector Label] =
+        IF (
+            ISFILTERED ( dim_sector[sector_name] ),
+            CONCATENATEX ( VALUES ( dim_sector[sector_name] ), dim_sector[sector_name], ", ", dim_sector[sector_name] ),
+            "All sectors"
+        )
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Selected Camp Label] =
+        VAR _n = COUNTROWS ( VALUES ( dim_camp[camp_name] ) )
+        RETURN
+            SWITCH (
+                TRUE (),
+                NOT ISFILTERED ( dim_camp[camp_name] ) && NOT ISFILTERED ( dim_camp[upazila] ), "All camps",
+                _n = 1, SELECTEDVALUE ( dim_camp[camp_name] ),
+                FORMAT ( _n, "0" ) & " camps"
+            )
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Title - Overview] =
+        "Programme performance | " & [Selected Sector Label] & " | " & [Selected Period Label]
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Title - Sector] =
+        "Indicator achievement for " & [Selected Sector Label] & " (" & [Selected Period Label] & ")"
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Title - Camp Detail] =
+        [Selected Camp Label] & " | achievement " & FORMAT ( [Achievement %], "0%" )
+            & " | " & [Status Label]
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Title - TPM] =
+        "Third-party monitoring: " & FORMAT ( [TPM Visits], "#,0" ) & " visits, "
+            & FORMAT ( [Closure Rate], "0%" ) & " of follow-ups closed"
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[KPI Subtitle - Achievement] =
+        VAR _d = [Achievement % MoM Change]
+        RETURN
+            IF (
+                ISBLANK ( _d ),
+                "No prior month",
+                IF ( _d >= 0, "Up ", "Down " ) & FORMAT ( ABS ( _d ), "0.0%" ) & " vs previous month"
+            )
+        // displayFolder = "Formatting"
+
+    MEASURE '_Measures'[Data Note] =
+        "Synthetic data for demonstration only. Data as of "
+            & FORMAT ( [Latest Month in Data], "mmm yyyy" ) & "."
+        // displayFolder = "Formatting"
+
+EVALUATE
+    ROW ( "Achievement %", [Achievement %], "Reporting Timeliness %", [Reporting Timeliness %] )

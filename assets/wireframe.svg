@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Segoe UI, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">Executive overview page wireframe</title>
+  <desc id="d">Layout of the executive overview page: header with title and slicers, five KPI cards, a monthly trend chart, a sector status bar chart, a camp map and a camp status table.</desc>
+  <rect width="1280" height="720" fill="#F5F6F7"/>
+  <g stroke="#B3B0AD" fill="#FFFFFF">
+    <rect x="16" y="16" width="1248" height="56" rx="4"/>
+    <rect x="16" y="88" width="238" height="96" rx="4"/><rect x="268" y="88" width="238" height="96" rx="4"/>
+    <rect x="520" y="88" width="238" height="96" rx="4"/><rect x="772" y="88" width="238" height="96" rx="4"/>
+    <rect x="1024" y="88" width="240" height="96" rx="4"/>
+    <rect x="16" y="200" width="736" height="240" rx="4"/>
+    <rect x="768" y="200" width="496" height="240" rx="4"/>
+    <rect x="16" y="456" width="616" height="248" rx="4"/>
+    <rect x="648" y="456" width="616" height="248" rx="4"/>
+  </g>
+  <g fill="#252423" font-size="16">
+    <text x="32" y="50" font-weight="600">Programme performance | All sectors | Jan 2025 - Jun 2026</text>
+    <text x="900" y="50" font-size="13" fill="#605E5C">[Period] [Sector] [Upazila] [Partner]</text>
+  </g>
+  <g font-size="13" fill="#605E5C">
+    <text x="32" y="112">Achievement %</text><text x="284" y="112">Children reached</text>
+    <text x="536" y="112">Reporting timeliness %</text><text x="788" y="112">DQ score %</text>
+    <text x="1040" y="112">TPM closure rate</text>
+  </g>
+  <g font-size="26" fill="#252423" font-weight="600">
+    <text x="32" y="155">--%</text><text x="284" y="155">--</text><text x="536" y="155">--%</text><text x="788" y="155">--%</text><text x="1040" y="155">--%</text>
+  </g>
+  <g font-size="14" fill="#252423" font-weight="600">
+    <text x="32" y="224">Monthly achievement % vs 90% target line</text>
+    <text x="784" y="224">Achievement % by sector (status colour)</text>
+    <text x="32" y="480">Camp map (bubble size = population, colour = status)</text>
+    <text x="664" y="480">Camp status table (drill-through to camp detail)</text>
+  </g>
+  <polyline points="48,400 140,370 232,380 324,340 416,330 508,310 600,300 720,290" fill="none" stroke="#0072B2" stroke-width="3"/>
+  <line x1="48" y1="300" x2="720" y2="300" stroke="#605E5C" stroke-dasharray="6 4"/>
+  <g>
+    <rect x="800" y="250" width="380" height="26" fill="#0072B2"/><rect x="800" y="286" width="330" height="26" fill="#0072B2"/>
+    <rect x="800" y="322" width="290" height="26" fill="#E69F00"/><rect x="800" y="358" width="260" height="26" fill="#E69F00"/>
+    <rect x="800" y="394" width="200" height="26" fill="#D55E00"/>
+  </g>
+  <g fill-opacity="0.8">
+    <circle cx="200" cy="560" r="18" fill="#0072B2"/><circle cx="260" cy="600" r="12" fill="#E69F00"/>
+    <circle cx="320" cy="540" r="22" fill="#0072B2"/><circle cx="380" cy="630" r="10" fill="#D55E00"/>
+    <circle cx="450" cy="580" r="15" fill="#0072B2"/>
+  </g>
+  <g stroke="#E1E4E8">
+    <line x1="664" y1="510" x2="1248" y2="510"/><line x1="664" y1="550" x2="1248" y2="550"/>
+    <line x1="664" y1="590" x2="1248" y2="590"/><line x1="664" y1="630" x2="1248" y2="630"/>
+    <line x1="664" y1="670" x2="1248" y2="670"/>
+  </g>
+  <text x="664" y="503" font-size="12" fill="#605E5C">Camp | Upazila | Achievement % | Timeliness % | DQ % | Status</text>
+</svg>

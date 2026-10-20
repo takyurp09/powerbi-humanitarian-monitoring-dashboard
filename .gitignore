@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+.env
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+Icon?
+
+# Power BI temporary and backup files (the .pbix itself is tracked)
+~$*.pbix
+*.pbix.bak
+*.pbit.bak
+.pbi/localSettings.json
+.pbi/cache.abf
+**/.pbi/cache.abf
+*.abf
+
+# Office lock files
+~$*
+
+# Third-party document without an open licence: not redistributed (see data/external/SOURCES.md for the download URL)
+data/external/unhcr/*.pdf
